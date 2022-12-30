@@ -1,3 +1,5 @@
 .env
 .idea
 tmp
+postgres-data
+.postgres-data

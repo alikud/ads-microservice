@@ -1,10 +1,23 @@
 package postgres
 
-import "github.com/jackc/pgx/v4/pgxpool"
+import (
+	"github.com/alikud/ads-microservice/domain"
+	"github.com/jackc/pgx/v4/pgxpool"
+)
+
+//Base crud interface
+type Offer interface {
+	Create(offer domain.Offer) (string, error)
+	GetAll() ([]domain.Offer, error)
+	GetById(id string) (domain.Offer, error)
+	Update(id string, offer domain.Offer) error
+	Delete(id string) error
+}
 
 type Repository struct {
+	Offer
 }
 
 func NewRepository(Db *pgxpool.Pool) *Repository {
-	return &Repository{}
+	return &Repository{Offer: NewOfferPostgres(Db)}
 }

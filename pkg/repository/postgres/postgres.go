@@ -9,7 +9,7 @@ import (
 	"net/url"
 )
 
-// NewPostgresDB create pgxpool instance and return it, or error and exit with status code 1
+// NewPostgresDB create *pgxpool instance and return it, or error and exit with status code 1
 func NewPostgresDB(config config.PostgresConfig) *pgxpool.Pool {
 	ctx := context.Background()
 	connStr := fmt.Sprintf("%s://%s:%s@%s:%s/%s?sslmode=%s&connect_timeout=%d",
