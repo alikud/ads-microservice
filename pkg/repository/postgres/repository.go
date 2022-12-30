@@ -8,7 +8,7 @@ import (
 //Base crud interface
 type Offer interface {
 	Create(offer domain.Offer) (string, error)
-	GetAll() ([]domain.Offer, error)
+	GetAll(limit int) ([]domain.Offer, error)
 	GetById(id string) (domain.Offer, error)
 	Update(id string, offer domain.Offer) error
 	Delete(id string) error

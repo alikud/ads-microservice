@@ -23,14 +23,18 @@ func (h *Handler) InitRoutes() {
 		return c.String(http.StatusOK, "Hello, World!")
 	})
 
-	h.echo.GET("/ad", h.getOffer)
+	h.echo.GET("/offers", h.getOffers)
 	h.echo.GET("/ad/:id", h.getOfferById)
 	h.echo.POST("/ad", h.createOffer)
 
 }
 
-func (h *Handler) getOffer(c echo.Context) error {
-	return c.String(http.StatusNotImplemented, "Not implemented")
+type Links struct {
+}
+
+func (h *Handler) getOffers(c echo.Context) error {
+	offers, _ := h.Service.GetAll(10)
+	return c.JSON(http.StatusOK, offers)
 }
 
 func (h *Handler) getOfferById(c echo.Context) error {

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"github.com/alikud/ads-microservice/domain"
 	"github.com/alikud/ads-microservice/pkg/repository/postgres"
 )
@@ -10,9 +11,11 @@ type OfferService struct {
 }
 
 func (o OfferService) GetAll(limit int) ([]domain.Offer, error) {
-	//TODO implement me
-	//return o.repo.GetAll(userId, listId)
-	panic("implement me")
+	offers, err := o.repo.GetAll(limit)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return offers, nil
 }
 
 func (o OfferService) GetById(offerId string) (domain.Offer, error) {
