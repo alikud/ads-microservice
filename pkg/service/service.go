@@ -5,9 +5,8 @@ import (
 	"github.com/alikud/ads-microservice/pkg/repository/postgres"
 )
 
-//3 метода: получение списка объявлений, получение одного объявления, создание объявления;
 type Offer interface {
-	GetAll(limit int) ([]domain.Offer, error)
+	GetAll(limit int, offset int, orderBy string) ([]domain.Offer, error)
 	GetById(offerId string) (domain.Offer, error)
 	Create(offer domain.Offer) (string, error)
 }

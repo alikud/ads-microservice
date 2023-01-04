@@ -18,8 +18,11 @@ func (o OfferPostgres) Create(offer domain.Offer) (string, error) {
 	panic("implement me")
 }
 
-func (o OfferPostgres) GetAll(limit int) ([]domain.Offer, error) {
-	rows, err := o.Db.Query(context.Background(), fmt.Sprintf("SELECT title, description, photo_url, price FROM Offers limit %d", limit))
+func (o OfferPostgres) GetAll(limit int, offset int, orderBy string, orderedType string) ([]domain.Offer, error) {
+	fmt.Println(limit, offset)
+	rows, err := o.Db.Query(context.Background(),
+		fmt.Sprintf("SELECT title, description, photo_url, price FROM Offers ORDER BY %s %s offset %d limit %d",
+			orderBy, orderedType, offset, limit))
 	if err != nil {
 		log.Error(err.Error())
 	}

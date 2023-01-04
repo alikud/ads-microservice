@@ -4,14 +4,26 @@ import (
 	"fmt"
 	"github.com/alikud/ads-microservice/domain"
 	"github.com/alikud/ads-microservice/pkg/repository/postgres"
+	"strings"
 )
 
 type OfferService struct {
 	repo *postgres.Repository
 }
 
-func (o OfferService) GetAll(limit int) ([]domain.Offer, error) {
-	offers, err := o.repo.GetAll(limit)
+func (o OfferService) GetAll(limit int, offset int, orderBy string) ([]domain.Offer, error) {
+
+	var orderData []string
+	if orderBy == "" {
+		orderData = []string{"created_at", "ASC"}
+	} else {
+		orderData = strings.Split(orderBy, ":")
+	}
+
+	fmt.Println(orderData[0], orderData[1])
+
+	offers, err := o.repo.GetAll(limit, offset+limit, orderData[0], orderData[1])
+
 	if err != nil {
 		fmt.Println(err)
 	}
