@@ -19,7 +19,6 @@ func (o OfferPostgres) Create(offer domain.Offer) (string, error) {
 }
 
 func (o OfferPostgres) GetAll(limit int, offset int, orderBy string, orderedType string) ([]domain.Offer, error) {
-	fmt.Println(limit, offset)
 	rows, err := o.Db.Query(context.Background(),
 		fmt.Sprintf("SELECT title, description, photo_url, price FROM Offers ORDER BY %s %s offset %d limit %d",
 			orderBy, orderedType, offset, limit))
@@ -38,15 +37,30 @@ func (o OfferPostgres) GetAll(limit int, offset int, orderBy string, orderedType
 	}
 
 	if err := rows.Err(); err != nil {
-		log.Fatal(err)
+		log.Error(err.Error())
 	}
 	return offers, nil
 
 }
 
-func (o OfferPostgres) GetById(id string) (domain.Offer, error) {
-	//TODO implement me
-	panic("implement me")
+func (o OfferPostgres) GetById(id string, fields ...string) (domain.Offer, error) {
+	var offer domain.Offer
+	q := "SELECT title, description, photo_url, price "
+
+	for _, j := range fields {
+		q += fmt.Sprintf(", %s", j)
+	}
+	q += "FROM Offers WHERE id=$1;"
+	row := o.Db.QueryRow(context.Background(), q,
+		id)
+	err := row.Scan(&offer.Title, &offer.Description, pq.Array(&offer.PhotoUrl), &offer.Price)
+
+	if err != nil {
+		log.Error(err.Error())
+		return offer, err
+	}
+
+	return offer, nil
 }
 
 func (o OfferPostgres) Update(id string, offer domain.Offer) error {
