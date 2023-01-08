@@ -10,7 +10,7 @@ type OfferService struct {
 	repo *postgres.Repository
 }
 
-func (o OfferService) GetAll(limit int, offset int, orderBy string) ([]domain.Offer, error) {
+func (o OfferService) GetAll(limit int, offset int, orderBy string) (*[]domain.Offer, error) {
 
 	var orderData []string
 	if orderBy == "" {
@@ -27,13 +27,16 @@ func (o OfferService) GetAll(limit int, offset int, orderBy string) ([]domain.Of
 	return offers, nil
 }
 
-func (o OfferService) GetById(offerId string, fields ...string) (domain.Offer, error) {
+func (o OfferService) GetById(offerId string) (*domain.Offer, error) {
 	return o.repo.GetById(offerId)
 }
 
 func (o OfferService) Create(offer domain.Offer) (string, error) {
-	//TODO implement me
-	panic("implement me")
+	id, err := o.repo.Create(offer)
+	if err != nil {
+		return "", err
+	}
+	return id, nil
 }
 
 func NewOfferService(repo *postgres.Repository) *OfferService {

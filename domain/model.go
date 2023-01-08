@@ -9,7 +9,7 @@ type Offer struct {
 	Title       string   `json:"title"`
 	Description string   `json:"description"`
 	PhotoUrl    []string `json:"photoUrl"`
-	Price       float32
+	Price       float32  `json:"price"`
 }
 
 //https://www.worldlink.com.cn/en/osdir/ozzo-validation.html

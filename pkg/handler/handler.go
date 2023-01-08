@@ -5,6 +5,7 @@ import (
 	"github.com/alikud/ads-microservice/pkg/service"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
 )
@@ -25,9 +26,9 @@ func (h *Handler) InitRoutes() {
 		return c.String(http.StatusOK, "Hello, World!")
 	})
 
-	h.echo.GET("/offers", h.getOffers)
-	h.echo.GET("/offers/:id", h.getOfferById)
-	h.echo.POST("/ad", h.createOffer)
+	h.echo.GET("/offer", h.getOffers)
+	h.echo.GET("/offer/:id", h.getOfferById)
+	h.echo.POST("/offer", h.createOffer)
 
 }
 
@@ -49,17 +50,14 @@ func (h *Handler) getOffers(c echo.Context) error {
 
 	limit := 2
 	offset := page * limit
-	offers, _ := h.Service.GetAll(limit, offset, orderBy)
+	offers, err := h.Service.GetAll(limit, offset, orderBy)
 
-	resp := getOffersResponse{
-		Result: offers,
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, struct {
+		}{})
 	}
 
-	if resp.Result == nil {
-		return c.JSON(http.StatusBadRequest, resp)
-	}
-
-	return c.JSON(http.StatusOK, resp)
+	return c.JSON(http.StatusOK, &offers)
 }
 
 func (h *Handler) getOfferById(c echo.Context) error {
@@ -69,9 +67,24 @@ func (h *Handler) getOfferById(c echo.Context) error {
 	}
 	offId := c.Param("id")
 	offer, _ := h.Service.GetById(offId)
-	return c.JSON(http.StatusOK, offer)
+	return c.JSON(http.StatusOK, &offer)
 }
 
 func (h *Handler) createOffer(c echo.Context) error {
-	return c.String(http.StatusOK, "Not implemented")
+	var o domain.Offer
+
+	if err := c.Bind(&o); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	id, err := h.Service.Create(o)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	type createOfferResponse struct {
+		Id string
+	}
+	resp := createOfferResponse{Id: id}
+	return c.JSON(http.StatusOK, resp)
 }

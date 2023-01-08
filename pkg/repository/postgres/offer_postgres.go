@@ -14,11 +14,19 @@ type OfferPostgres struct {
 }
 
 func (o OfferPostgres) Create(offer domain.Offer) (string, error) {
-	//TODO implement me
-	panic("implement me")
+	var id string
+	query := "INSERT INTO Offers (title, description, photo_url, price) VALUES ($1, $2, $3, $4) RETURNING ID"
+	err := o.Db.QueryRow(context.Background(), query,
+		offer.Title, offer.Description, pq.Array(offer.PhotoUrl), offer.Price).Scan(&id)
+
+	if err != nil {
+		log.Error(err.Error())
+		return "", err
+	}
+	return id, nil
 }
 
-func (o OfferPostgres) GetAll(limit int, offset int, orderBy string, orderedType string) ([]domain.Offer, error) {
+func (o OfferPostgres) GetAll(limit int, offset int, orderBy string, orderedType string) (*[]domain.Offer, error) {
 	rows, err := o.Db.Query(context.Background(),
 		fmt.Sprintf("SELECT title, description, photo_url, price FROM Offers ORDER BY %s %s offset %d limit %d",
 			orderBy, orderedType, offset, limit))
@@ -31,36 +39,32 @@ func (o OfferPostgres) GetAll(limit int, offset int, orderBy string, orderedType
 		var offer domain.Offer
 		err := rows.Scan(&offer.Title, &offer.Description, pq.Array(&offer.PhotoUrl), &offer.Price)
 		if err != nil {
-			fmt.Println(err)
+			log.Error(err.Error())
 		}
 		offers = append(offers, offer)
 	}
 
 	if err := rows.Err(); err != nil {
 		log.Error(err.Error())
+		return nil, err
 	}
-	return offers, nil
+	return &offers, nil
 
 }
 
-func (o OfferPostgres) GetById(id string, fields ...string) (domain.Offer, error) {
+func (o OfferPostgres) GetById(id string) (*domain.Offer, error) {
 	var offer domain.Offer
-	q := "SELECT title, description, photo_url, price "
-
-	for _, j := range fields {
-		q += fmt.Sprintf(", %s", j)
-	}
-	q += "FROM Offers WHERE id=$1;"
-	row := o.Db.QueryRow(context.Background(), q,
+	query := "SELECT title, description, photo_url, price from Offers where ID=$1"
+	row := o.Db.QueryRow(context.Background(), query,
 		id)
 	err := row.Scan(&offer.Title, &offer.Description, pq.Array(&offer.PhotoUrl), &offer.Price)
 
 	if err != nil {
 		log.Error(err.Error())
-		return offer, err
+		return &offer, err
 	}
 
-	return offer, nil
+	return &offer, nil
 }
 
 func (o OfferPostgres) Update(id string, offer domain.Offer) error {
