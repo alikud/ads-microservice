@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/alikud/ads-microservice/domain"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -27,14 +28,17 @@ func (o OfferPostgres) Create(offer domain.Offer) (string, error) {
 }
 
 func (o OfferPostgres) GetAll(limit int, offset int, orderBy string, orderedType string) (*[]domain.Offer, error) {
+	query := fmt.Sprintf("SELECT title, description, photo_url, price FROM Offers ORDER BY %s %s offset %d limit %d",
+		orderBy, orderedType, offset, limit)
+	var offers []domain.Offer
 	rows, err := o.Db.Query(context.Background(),
-		fmt.Sprintf("SELECT title, description, photo_url, price FROM Offers ORDER BY %s %s offset %d limit %d",
-			orderBy, orderedType, offset, limit))
+		query)
 	if err != nil {
 		log.Error(err.Error())
+		return nil, err
 	}
 	defer rows.Close()
-	var offers []domain.Offer
+	//var offers []domain.Offer
 	for rows.Next() {
 		var offer domain.Offer
 		err := rows.Scan(&offer.Title, &offer.Description, pq.Array(&offer.PhotoUrl), &offer.Price)
@@ -48,6 +52,7 @@ func (o OfferPostgres) GetAll(limit int, offset int, orderBy string, orderedType
 		log.Error(err.Error())
 		return nil, err
 	}
+
 	return &offers, nil
 
 }
@@ -67,14 +72,31 @@ func (o OfferPostgres) GetById(id string) (*domain.Offer, error) {
 	return &offer, nil
 }
 
-func (o OfferPostgres) Update(id string, offer domain.Offer) error {
-	//TODO implement me
-	panic("implement me")
+func (o OfferPostgres) Update(id string, offer *domain.Offer) error {
+	query := "UPDATE Offers SET (title, description, photo_url, price) VALUES ($1, $2, $3, $4) WHERE ID=$5"
+	tag, err := o.Db.Exec(context.Background(), query,
+		&offer.Title, &offer.Description, pq.Array(&offer.PhotoUrl), &offer.Price, id)
+	if tag.RowsAffected() == 0 {
+		return errors.New("wrong id")
+	}
+	if err != nil {
+		log.Error("Error with update table: " + err.Error())
+		return err
+	}
+	return nil
 }
 
 func (o OfferPostgres) Delete(id string) error {
-	//TODO implement me
-	panic("implement me")
+	query := "DELETE FROM Offers WHERE ID=$1"
+	tag, err := o.Db.Exec(context.Background(), query, id)
+	if tag.RowsAffected() == 0 {
+		return errors.New("wrong id")
+	}
+	if err != nil {
+		log.Error("Error with delete from table: " + err.Error())
+		return err
+	}
+	return nil
 }
 
 func NewOfferPostgres(db *pgxpool.Pool) *OfferPostgres {

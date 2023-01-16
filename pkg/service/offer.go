@@ -39,6 +39,14 @@ func (o OfferService) Create(offer domain.Offer) (string, error) {
 	return id, nil
 }
 
+func (o OfferService) Update(id string, offer *domain.Offer) error {
+	return o.repo.Update(id, offer)
+}
+
+func (o OfferService) Delete(id string) error {
+	return o.repo.Delete(id)
+}
+
 func NewOfferService(repo *postgres.Repository) *OfferService {
 	return &OfferService{repo: repo}
 }

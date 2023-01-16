@@ -9,6 +9,8 @@ type Offer interface {
 	GetAll(limit int, offset int, orderBy string) (*[]domain.Offer, error)
 	GetById(offerId string) (*domain.Offer, error)
 	Create(offer domain.Offer) (string, error)
+	Update(id string, offer *domain.Offer) error
+	Delete(id string) error
 }
 
 type Service struct {
