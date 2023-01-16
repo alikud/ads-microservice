@@ -43,17 +43,30 @@
 
 
 Пример запуска проекта
+
 git clone https://github.com/alikud/ads-microservice.git
+
 cd ads-microservice
+
 nano .env 
+
 Пример .env файла
+
 SPEC_DEBUG=false
+
 SPEC_PORT=8080
+
 DB_USER=db_user
+
 DB_PASSWORD=pwd123
+
 DB_DBNAME=backend_db
+
 DB_HOST=psql
+
 DB_PORT=5432
+
 DB_SSL_MODE=disable
+
 make up , сервер работает на 8080 порту
 
