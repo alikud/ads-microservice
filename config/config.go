@@ -38,7 +38,7 @@ type PostgresConfig struct {
 
 // InitPostgresConfig read psql config from ENV , if err exit with code 1
 func InitPostgresConfig(debug bool) PostgresConfig {
-	if debug != true {
+	if !debug {
 		var p PostgresConfig
 		err := envconfig.Process("db", &p)
 		if err != nil {
@@ -56,7 +56,7 @@ func InitPostgresConfig(debug bool) PostgresConfig {
 		Password: os.Getenv("DB_PASSWORD"),
 		Host:     os.Getenv("DB_HOST"),
 		Port:     os.Getenv("DB_PORT"),
-		DBName:   os.Getenv("DB_NAME"),
+		DBName:   os.Getenv("DB_DBNAME"),
 		SSLMode:  os.Getenv("DB_SSL_MODE"),
 		MinConns: 10,
 		MaxConns: 20,

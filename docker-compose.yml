@@ -1,11 +1,6 @@
 version: "3.9"
 services:
-  app:
-    build:
-      dockerfile: Dockerfile
-    env_file:
-      - ./.env
-  psql:
+  postgres:
     image: "postgres:14.2"
     container_name: "psql"
     environment:
@@ -17,5 +12,22 @@ services:
       - "5432:5432"
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    networks:
+      - database-network
+
+  app:
+    build:
+      dockerfile: Dockerfile
+    env_file:
+      - ./.env
+    networks:
+      - database-network
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
+networks:
+  database-network: # Name in this docker-compose file
+    driver: bridge

@@ -12,6 +12,16 @@ import (
 // NewPostgresDB create *pgxpool instance and return it, or error and exit with status code 1
 func NewPostgresDB(config config.PostgresConfig) *pgxpool.Pool {
 	ctx := context.Background()
+	//connStr := fmt.Sprintf("%s://%s:%s@%s:%s/%s?sslmode=%s&connect_timeout=%d",
+	//	"postgres",
+	//	url.QueryEscape(config.User),
+	//	url.QueryEscape(config.Password),
+	//	config.Host,
+	//	config.Port,
+	//	config.DBName,
+	//	config.SSLMode,
+	//	config.TimeOut)
+
 	connStr := fmt.Sprintf("%s://%s:%s@%s:%s/%s?sslmode=%s&connect_timeout=%d",
 		"postgres",
 		url.QueryEscape(config.User),
@@ -21,6 +31,8 @@ func NewPostgresDB(config config.PostgresConfig) *pgxpool.Pool {
 		config.DBName,
 		config.SSLMode,
 		config.TimeOut)
+
+	log.Info(connStr)
 
 	poolConfig, _ := pgxpool.ParseConfig(connStr)
 	poolConfig.MinConns = config.MinConns
