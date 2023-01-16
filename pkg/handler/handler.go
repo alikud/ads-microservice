@@ -95,7 +95,10 @@ func (h *Handler) GetOffers(c echo.Context) error {
 func (h *Handler) GetOfferById(c echo.Context) error {
 
 	offId := c.Param("id")
-	offer, _ := h.Service.GetById(offId)
+	offer, err := h.Service.GetById(offId)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, map[string]interface{}{"Error": "Wrong id"})
+	}
 	return c.JSON(http.StatusOK, &offer)
 }
 
@@ -115,13 +118,13 @@ func (h *Handler) CreateOffer(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	if err := o.Validate(); err != nil {
-		return c.String(http.StatusBadRequest, "Bad data")
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{"Error": "Bad data format"})
 	}
 
 	id, err := h.Service.Create(o)
 	if err != nil {
 		log.Error(err.Error())
-		return c.String(http.StatusBadRequest, "")
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{"Error": err.Error()})
 	}
 
 	type createOfferResponse struct {
@@ -145,7 +148,7 @@ func (h *Handler) DeleteOffer(c echo.Context) error {
 	offId := c.QueryParam("id")
 	err := h.Service.Delete(offId)
 	if err != nil {
-		return c.JSON(http.StatusNotFound, "error with deleting offer")
+		return c.JSON(http.StatusNotFound, map[string]interface{}{"Error": err.Error()})
 	}
 	return c.JSON(http.StatusOK, offId)
 }
@@ -167,7 +170,7 @@ func (h *Handler) UpdateOffer(c echo.Context) error {
 	}
 	offId := c.QueryParam("id")
 	if offId == "" {
-		return c.JSON(http.StatusBadRequest, "id is empty!")
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{"Error": "Id is empty"})
 	}
 
 	err := h.Service.Update(offId, &o)
