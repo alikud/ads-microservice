@@ -1,72 +1,35 @@
-# ads-microservice
+This is microservice for storing and posting advertisements. Advertisements are stored in a database. The service provide an API that works over HTTP in JSON format.
 
-Решение тестового задания, текст ниже. ✅ - выполнено
+Requirements:
 
-👣 Тестовое задание на позицию Golang разработчика.
+✅ - Simple instructions for running the service (ideally with the ability to run via docker-compose up, but this is not mandatory);
+The project can be launched by cloning the repository and running make up.
 
-Задача
-Необходимо создать сервис для хранения и подачи объявлений. Объявления должны храниться в базе данных. Сервис должен предоставлять API, работающее поверх HTTP в формате JSON.
+✅ - Field validation: no more than 3 links to photos, description no more than 1000 characters, title no more than 200 characters.
 
+Details
+Method for getting a list of advertisements
 
-Требования
+✅ - Pagination: 10 advertisements should be displayed on one page (this parameter can be configured, currently set to 2).
 
-✅  - Простая инструкция для запуска (в идеале — с возможностью запустить через docker-compose up, но это необязательно);
-  Проект запускается через клонирование репозитория и make up
-  
-✅  - Валидация полей: не больше 3 ссылок на фото, описание не больше 1000 символов, название не больше 200 символов;
+✅ - Sorting: by price (ascending/descending) and by creation date (ascending/descending).
 
-Детали
-Метод получения списка объявлений
+✅ - Fields in the response: title of the advertisement, link to the main photo (first in the list), price.
 
-✅ - Пагинация: на одной странице должно присутствовать 10 объявлений;(сейчас этот параметр можно настроить, пока установлен на 2)
+Method for getting a specific advertisement
 
-✅ - Cортировки: по цене (возрастание/убывание) и по дате создания (возрастание/убывание);
+✅ - Mandatory fields in the response: title of the advertisement, price, link to the main photo.
 
-✅ - Поля в ответе: название объявления, ссылка на главное фото (первое в списке), цена.
+Optional fields (can be requested by passing the "fields" parameter): description, links to all photos.
+Method for creating an advertisement:
 
+✅ - Accepts all the fields listed above: title, description, several links to photos (the actual photos do not need to be uploaded anywhere), price.
+✅ - Returns the ID of the created advertisement and the result code (success or failure).
 
-Метод получения конкретного объявления
-✅- Обязательные поля в ответе: название объявления, цена, ссылка на главное фото;
-- Опциональные поля (можно запросить, передав параметр fields): описание, ссылки на все фото.
+Additional features
 
-Метод создания объявления:
-✅- Принимает все вышеперечисленные поля: название, описание, несколько ссылок на фотографии (сами фото загружать никуда не требуется), цена;
-✅- Возвращает ID созданного объявления и код результата (ошибка или успех).
+Unit tests: try to achieve test coverage of 70% or higher.
+✅ - Containerization: the project can be launched using the docker-compose up command.
 
-Дополнительно
-- Юнит тесты: постарайтесь достичь покрытия в 70% и больше;
-
-✅ - Контейнеризация: есть возможность поднять проект с помощью команды docker-compose up;
-- Архитектура сервиса описана в виде текста и/или диаграмм
-
-✅ - Документация: есть структурированное описание методов сервиса.
-
-
-Пример запуска проекта
-
-git clone https://github.com/alikud/ads-microservice.git
-
-cd ads-microservice
-
-nano .env 
-
-Пример .env файла
-
-SPEC_DEBUG=false
-
-SPEC_PORT=8080
-
-DB_USER=db_user
-
-DB_PASSWORD=pwd123
-
-DB_DBNAME=backend_db
-
-DB_HOST=psql
-
-DB_PORT=5432
-
-DB_SSL_MODE=disable
-
-make up , сервер работает на 8080 порту
-
+The service architecture is described in text and/or diagrams.
+✅ - Documentation: there is a structured description of the service methods.
