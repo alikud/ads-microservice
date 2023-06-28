@@ -1,3 +1,5 @@
+```ACTUAL STATUS - REFACTORING```
+
 This is microservice for storing and posting advertisements. Advertisements are stored in a database. The service provide an API that works over HTTP in JSON format.
 
 Requirements:
