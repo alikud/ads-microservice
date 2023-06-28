@@ -27,7 +27,7 @@ func (o OfferPostgres) Create(offer domain.Offer) (string, error) {
 	return id, nil
 }
 
-func (o OfferPostgres) GetAll(limit int, offset int, orderBy string, orderedType string) (*[]domain.Offer, error) {
+func (o OfferPostgres) GetAll(limit int, offset int, orderBy string, orderedType string) ([]domain.Offer, error) {
 	query := fmt.Sprintf("SELECT title, description, photo_url, price FROM Offers ORDER BY %s %s offset %d limit %d",
 		orderBy, orderedType, offset, limit)
 	var offers []domain.Offer
@@ -53,11 +53,11 @@ func (o OfferPostgres) GetAll(limit int, offset int, orderBy string, orderedType
 		return nil, err
 	}
 
-	return &offers, nil
+	return offers, nil
 
 }
 
-func (o OfferPostgres) GetById(id string) (*domain.Offer, error) {
+func (o OfferPostgres) GetById(id string) (domain.Offer, error) {
 	var offer domain.Offer
 	query := "SELECT title, description, photo_url, price from Offers where ID=$1"
 	row := o.Db.QueryRow(context.Background(), query,
@@ -66,13 +66,13 @@ func (o OfferPostgres) GetById(id string) (*domain.Offer, error) {
 
 	if err != nil {
 		log.Error(err.Error())
-		return &offer, err
+		return offer, err
 	}
 
-	return &offer, nil
+	return offer, nil
 }
 
-func (o OfferPostgres) Update(id string, offer *domain.Offer) error {
+func (o OfferPostgres) Update(id string, offer domain.Offer) error {
 	query := "UPDATE Offers SET (title, description, photo_url, price) VALUES ($1, $2, $3, $4) WHERE ID=$5"
 	tag, err := o.Db.Exec(context.Background(), query,
 		&offer.Title, &offer.Description, pq.Array(&offer.PhotoUrl), &offer.Price, id)

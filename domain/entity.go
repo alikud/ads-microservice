@@ -2,18 +2,19 @@ package domain
 
 import (
 	"errors"
+
 	validation "github.com/go-ozzo/ozzo-validation"
 )
 
 type Offer struct {
-	Title       string   `json:"title"`
-	Description string   `json:"description"`
-	PhotoUrl    []string `json:"photoUrl"`
-	Price       float32  `json:"price"`
+	Title       string
+	Description string
+	PhotoUrl    []string
+	Price       float32
 }
 
-//https://www.worldlink.com.cn/en/osdir/ozzo-validation.html
-//https://segmentfault.com/a/1190000040214453/en
+// https://www.worldlink.com.cn/en/osdir/ozzo-validation.html
+// https://segmentfault.com/a/1190000040214453/en
 func (o *Offer) checkPhotoUrl(value interface{}) error {
 	photoUrl, ok := value.([]string)
 	if !ok {

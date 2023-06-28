@@ -5,3 +5,6 @@ up:
 
 doc:
 	swag init -g ../../app/main.go
+
+vet:
+	go vet

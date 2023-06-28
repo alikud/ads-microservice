@@ -1,42 +1,99 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"github.com/alikud/ads-microservice/config"
-	"github.com/alikud/ads-microservice/pkg/handler"
-	"github.com/alikud/ads-microservice/pkg/repository/postgres"
-	"github.com/alikud/ads-microservice/pkg/service"
-	"github.com/labstack/echo/v4"
-	log "github.com/sirupsen/logrus"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"time"
+
+	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5"
+	"github.com/kelseyhightower/envconfig"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/sirupsen/logrus"
 )
 
-// @title Swagger  API
-// @version 1.0
-// @description This is a sample CRUD ads service
-// @termsOfService http://swagger.io/terms/
+type Options struct {
+	Debug    bool   `envconfig:"DEBUG" default:"true"`
+	HTTPPort string `envconfig:"HTTP_PORT" default:"8080"`
+	LogLevel string `envconfig:"LOG_LEVEL" default:"info"`
+	Timeout  int64  `envconfig:"TIME_OUT" default:"15"`
 
-// @contact.name API Support
-// @contact.url http://www.swagger.io/support
-// @contact.email support@swagger.io
+	PostgresqlUser     string `envconfig:"POSTGRESQL_USER" required:"true" default:"saas"`
+	PostgresqlPass     string `envconfig:"POSTGRESQL_PASSWORD" required:"true" default:"saas123"`
+	PostgresqlHost     string `envconfig:"POSTGRESQL_HOST" default:"0.0.0.0"`
+	PostgresqlPort     string `envconfig:"POSTGRESQL_PORT" default:"5432"`
+	PostgresqlDatabase string `envconfig:"POSTGRESQL_DATABASE" default:"saas"`
+}
 
-// @license.name Apache 2.0
-// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+func InitLogger(logLevel string) error {
+	logrus.SetOutput(os.Stdout)
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+	lvl, err := logrus.ParseLevel(logLevel)
+	if err != nil {
+		return fmt.Errorf("failed to parse log level. %v", err)
+	}
+	logrus.SetLevel(lvl)
+	return nil
+}
 
-// @host localhost:8080
 func main() {
-	spec := config.InitSpecConfig()
-	log.Infof("Init Specification config debug: %t port: %s", spec.Debug, spec.Port)
+	// Config
+	var cfg Options
+	err := envconfig.Process("", &cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	dbConfig := config.InitPostgresConfig(spec.Debug)
-	pool := postgres.NewPostgresDB(dbConfig)
-	repository := postgres.NewRepository(pool)
-	services := service.NewService(repository)
+	// Logger
+	logrus.SetOutput(os.Stdout)
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+	lvl, err := logrus.ParseLevel(cfg.LogLevel)
+	if err != nil {
+		log.Fatal(err)
+	}
+	logrus.SetLevel(lvl)
 
-	e := echo.New()
+	// Syscall
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
 
-	handlers := handler.NewHandler(services, e)
-	handlers.InitRoutes()
-	log.Infof("Init database connection in debug: %t mode", spec.Debug)
-	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", spec.Port)))
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		call := <-c
+		log.Printf("system call:%+v", call)
+		cancel()
+	}()
+
+	// Http
+	mux := chi.NewRouter()
+	mux.Use(middleware.Logger)
+	mux.Use(middleware.Recoverer)
+	mux.Use(middleware.Timeout(time.Duration(cfg.Timeout) * time.Second))
+	mux.Use(middleware.Heartbeat("/health"))
+	mux.Handle("/metrics", promhttp.Handler())
+
+	// sub := subscription.New(db)
+	// mux.Get("/v1/saas/subscription", sub.GetByUUID)
+
+	httpServer := &http.Server{Addr: fmt.Sprintf(":%s", cfg.HTTPPort), Handler: mux}
+
+	go func() {
+		if cErr := httpServer.ListenAndServe(); cErr != nil {
+			logrus.Fatalf("failed to serve: %v", err)
+		}
+	}()
+
+	logrus.Infof("Started on port %s", cfg.HTTPPort)
+	<-ctx.Done()
+	logrus.Info("Stopped")
+
+	err = httpServer.Shutdown(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
 
 }
